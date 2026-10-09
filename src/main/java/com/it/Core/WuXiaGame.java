@@ -2,6 +2,8 @@ package com.it.Core;
 
 import com.it.Player.Player;
 import com.it.enemy.Enemy;
+import com.it.enemy.EnemyFactory;
+import com.it.enemy.NormalEnemyFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +11,10 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class WuXiaGame {
+    private  static List<EnemyFactory> enemyFactories=new ArrayList<>();
+    static {
+        enemyFactories.add(new NormalEnemyFactory());
+    }
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         System.out.println("========== 武侠文字小游戏 ==========");
@@ -44,8 +50,9 @@ public class WuXiaGame {
                 // 随机刷敌人
                 Enemy randomEnemy = enemyPool.get(rand.nextInt(enemyPool.size()));
                 // 每次新建敌人实例，保证血量重置
-                Enemy battleEnemy = new Enemy(randomEnemy.getName(),  randomEnemy.getAttack());
-                Battle battle = new Battle(hero, battleEnemy);
+                EnemyFactory enemyFactory = enemyFactories.get(rand.nextInt(enemyFactories.size()));
+                Enemy enemy = enemyFactory.createEnemy();
+                Battle battle = new Battle(hero, enemy);
                 battle.startBattle();
             } else {
                 System.out.println("无效选项");
