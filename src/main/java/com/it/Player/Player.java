@@ -1,8 +1,8 @@
-package com.it;
+package com.it.Player;
 
+import com.it.common.Skill;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;

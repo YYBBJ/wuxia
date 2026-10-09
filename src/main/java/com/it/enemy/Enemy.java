@@ -1,4 +1,4 @@
-package com.it;
+package com.it.enemy;
 
 import lombok.Data;
 

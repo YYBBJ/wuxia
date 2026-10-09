@@ -1,4 +1,7 @@
-package com.it;
+package com.it.Core;
+
+import com.it.Player.Player;
+import com.it.enemy.Enemy;
 
 import java.util.ArrayList;
 import java.util.List;

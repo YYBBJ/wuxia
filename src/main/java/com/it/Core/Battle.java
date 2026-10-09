@@ -1,5 +1,9 @@
-package com.it;
+package com.it.Core;
 
+
+import com.it.Player.Player;
+import com.it.common.Skill;
+import com.it.enemy.Enemy;
 
 import java.util.Random;
 import java.util.Scanner;
