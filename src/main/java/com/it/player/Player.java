@@ -61,6 +61,20 @@ public class Player {
         System.out.printf("【%s】%s 造成 %d 点伤害！\n", skill.getName(), skill.getDesc(), damage);
         return damage;
     }
+
+    /**
+     * 判断当前内力是否足以施展指定技能。
+     *
+     * @param skill 要施展的技能
+     * @return 内力足够时返回 true
+     */
+    public boolean hasEnoughInternalForce(Skill skill) {
+        if (skill == null) {
+            throw new IllegalArgumentException("技能不能为 null");
+        }
+        return internalForce >= skill.getNeedInternalForce();
+    }
+
     //扣血
     public void loseHP(Skill skill) {
         if(HP<=0) return;

@@ -55,6 +55,19 @@ public class Enemy {
         return damage;
     }
 
+    /**
+     * 判断当前内力是否足以施展指定技能。
+     *
+     * @param skill 要施展的技能
+     * @return 内力足够时返回 true
+     */
+    public boolean hasEnoughInternalForce(Skill skill) {
+        if (skill == null) {
+            throw new IllegalArgumentException("技能不能为 null");
+        }
+        return internalForce >= skill.getNeedInternalForce();
+    }
+
     public void loseHP(int damage){
         if(HP<=0) return;
         HP-=damage;

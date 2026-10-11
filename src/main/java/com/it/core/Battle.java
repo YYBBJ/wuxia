@@ -61,7 +61,7 @@ public class Battle {
                     continue;
                 }
                 Skill skill = player.getSkills().get(skillIdx);
-                if(player.getInternalForce()<skill.getNeedInternalForce()){
+                if(!player.hasEnoughInternalForce(skill)){
                     System.out.println("内力不足，无法施展！");
                     continue;
                 }
