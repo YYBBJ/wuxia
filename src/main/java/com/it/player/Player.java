@@ -66,6 +66,11 @@ public class Player {
         if(HP<=0) return;
         HP-=skill.getDamage();
     }
+
+    public boolean isDead() {
+        return HP <= 0;
+    }
+
     //升级判断
     public void checkLevelUp(){
         int needCult=level*50;

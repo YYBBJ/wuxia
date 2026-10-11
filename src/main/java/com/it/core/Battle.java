@@ -68,7 +68,7 @@ public class Battle {
                 //玩家攻击
                 int damageToEnemy = player.castSkill(skill);
                 enemy.loseHP(damageToEnemy);
-                if(enemy.getHP()<=0){
+                if(enemy.isDead()){
                     System.out.printf("\n✅ %s被你击败！\n", enemy.getName());
                     int reward = 30 + new Random().nextInt(20);
                     player.setCultivation(player.getCultivation()+reward);
@@ -80,7 +80,7 @@ public class Battle {
                 //敌人攻击
                 int damageToPlayer = enemy.enemyAttack();
                 player.setHP(player.getHP()-damageToPlayer);
-                if(player.getHP()<=0){
+                if(player.isDead()){
                     System.out.println("\n❌ 你重伤倒地，战斗失败...");
                 }
 
