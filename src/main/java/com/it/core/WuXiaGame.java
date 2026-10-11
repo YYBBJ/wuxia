@@ -3,27 +3,18 @@ package com.it.core;
 import com.it.player.Player;
 import com.it.enemy.Enemy;
 import com.it.enemy.EnemyFactory;
-import com.it.enemy.NormalEnemyFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
 public class WuXiaGame {
-    private  static List<EnemyFactory> enemyFactories=new ArrayList<>();
-    static {
-        enemyFactories.add(new NormalEnemyFactory());
-    }
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        System.out.println("========== 武侠文字小游戏 ==========");
+        System.out.println("══════════ 武侠文字小游戏 ══════════");
         System.out.print("请输入你的侠客名号：");
+
+        Scanner sc = new Scanner(System.in);
         String playerName = sc.nextLine();
         Player hero = new Player(playerName);
-
-
-        Random rand = new Random();
 
         while (true) {
             showMenu();
@@ -36,7 +27,7 @@ public class WuXiaGame {
                 continue;
             }
 
-            if (!handleMenuOption(menuOpt, hero, rand, sc)) {
+            if (!handleMenuOption(menuOpt, hero, sc)) {
                 break;
             }
         }
@@ -48,11 +39,10 @@ public class WuXiaGame {
      *
      * @param menuOpt 主菜单选项
      * @param hero 当前玩家
-     * @param rand 用于随机选择敌人
      * @param sc 读取控制台输入的扫描器
      * @return 选择退出时返回 false，否则返回 true
      */
-    private static boolean handleMenuOption(int menuOpt, Player hero, Random rand, Scanner sc) {
+    private static boolean handleMenuOption(int menuOpt, Player hero, Scanner sc) {
         if (menuOpt == 0) {
             System.out.println("江湖路远，后会有期！");
             return false;
@@ -60,8 +50,7 @@ public class WuXiaGame {
             hero.showStatus();
         } else if (menuOpt == 1) {
             printProcess();
-            EnemyFactory enemyFactory = enemyFactories.get(rand.nextInt(enemyFactories.size()));
-            Enemy enemy = enemyFactory.createEnemy();
+            Enemy enemy = EnemyFactory.createRandomEnemy();
             // 玩家确认迎战后才进入战斗；撤退则回到主菜单。
             if (fightOrWithdraw(sc)) {
                 Battle battle = new Battle(hero, enemy);
@@ -89,7 +78,7 @@ public class WuXiaGame {
 
             if (step < steps) {
                 try {
-                    Thread.sleep(80 + random.nextInt(121));
+                    Thread.sleep(80+ random.nextInt(121));
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     System.out.println("\n探索已中断。");
@@ -130,8 +119,6 @@ public class WuXiaGame {
     }
 
     private static void clearConsole() {
-        // 使用 ANSI 转义序列清空屏幕并将光标移到左上角。
-        System.out.print("\033[H\033[2J");
-        System.out.flush();
+
     }
 }

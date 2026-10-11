@@ -1,7 +1,9 @@
 package com.it.enemy;
 
+import com.it.common.Skill;
 import lombok.Data;
 
+import java.util.List;
 import java.util.Random;
 
 @Data
@@ -10,12 +12,15 @@ public class Enemy {
     private int HP;
     private int maxHP;
     private int attack;
+    private int level;
+    private List<Skill> skills;
     private Random random = new Random();
     public Enemy(String name,int attack){
         this.name = name;
         this.maxHP =100;
         this.HP=maxHP;
         this.attack=attack;
+        this.level=1;
     }
     public int enemyAttack(){
         boolean heavy = random.nextDouble() < 0.25;
@@ -35,6 +40,6 @@ public class Enemy {
     }
 
     public void showStatus() {
-        System.out.printf("【%s】气血：%d/%d\n", name, HP,maxHP );
+        System.out.printf("【%s Lv.%d】气血：%d/%d\n", name,level, HP,maxHP );
     }
 }
