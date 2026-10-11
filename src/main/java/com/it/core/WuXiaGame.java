@@ -21,11 +21,8 @@ public class WuXiaGame {
         System.out.print("请输入你的侠客名号：");
         String playerName = sc.nextLine();
         Player hero = new Player(playerName);
-        // 敌人池，可以继续添加敌人
-        List<Enemy> enemyPool = new ArrayList<>();
-        enemyPool.add(new Enemy("拦路山贼",  10));
-        enemyPool.add(new Enemy("毒巫",  13));
-        enemyPool.add(new Enemy("黑衣剑客", 16));
+
+
         Random rand = new Random();
 
         while (true) {
@@ -47,9 +44,8 @@ public class WuXiaGame {
                 //打印进度条
                 System.out.println("正在探索地图");
                 printProcess();
-                // 随机刷敌人
-                Enemy randomEnemy = enemyPool.get(rand.nextInt(enemyPool.size()));
-                // 每次新建敌人实例，保证血量重置
+
+                // 获取敌人实例
                 EnemyFactory enemyFactory = enemyFactories.get(rand.nextInt(enemyFactories.size()));
                 Enemy enemy = enemyFactory.createEnemy();
                 Battle battle = new Battle(hero, enemy);
