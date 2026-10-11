@@ -58,20 +58,29 @@ public class WuXiaGame {
     }
     private static void printProcess(){
         Random random = new Random();
-        // 先打印 []
-        System.out.print("[]");
-        int max = 20;
-        for (int i = 0; i < max; i++) {
-            // 难点：控制台不能在中间插入字符，只能覆盖，所以先打印退格，再输出=
-            System.out.print("\b=]");
-            try {
-                Thread.sleep(random.nextInt(250));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        int width = 24;
+        int steps = 20;
+
+        for (int step = 0; step <= steps; step++) {
+            int percent = step * 100 / steps;
+            int filled = step * width / steps;
+            String bar = "█".repeat(filled) + "·".repeat(width - filled);
+            String marker = step == steps ? "⚔" : "➤";
+
+            System.out.printf("\r行走江湖  %s%s  %3d%%", bar, marker, percent);
+            System.out.flush();
+
+            if (step < steps) {
+                try {
+                    Thread.sleep(80 + random.nextInt(121));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    System.out.println("\n探索已中断。");
+                    return;
+                }
             }
         }
-        System.out.println();
-
+        System.out.println("\n✦ 探索完成，前方有动静！");
     }
     public static void showMenu(){
         System.out.println("\n===== 主菜单 =====");
