@@ -1,4 +1,4 @@
-package com.it.Player;
+package com.it.player;
 
 import com.it.common.Skill;
 import lombok.AllArgsConstructor;

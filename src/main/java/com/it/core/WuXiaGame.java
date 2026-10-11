@@ -1,6 +1,6 @@
-package com.it.Core;
+package com.it.core;
 
-import com.it.Player.Player;
+import com.it.player.Player;
 import com.it.enemy.Enemy;
 import com.it.enemy.EnemyFactory;
 import com.it.enemy.NormalEnemyFactory;
