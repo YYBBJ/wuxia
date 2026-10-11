@@ -35,27 +35,44 @@ public class WuXiaGame {
                 System.out.println("输入错误！");
                 continue;
             }
-            if (menuOpt == 0) {
-                System.out.println("江湖路远，后会有期！");
-                break;
-            } else if (menuOpt == 2) {
-                hero.showStatus();
-            } else if (menuOpt == 1) {
-                //打印进度条
-                System.out.println("正在探索地图");
-                printProcess();
 
-                // 获取敌人实例
-                EnemyFactory enemyFactory = enemyFactories.get(rand.nextInt(enemyFactories.size()));
-                Enemy enemy = enemyFactory.createEnemy();
-                Battle battle = new Battle(hero, enemy);
-                battle.startBattle();
-            } else {
-                System.out.println("无效选项");
+            if (!handleMenuOption(menuOpt, hero, rand, sc)) {
+                break;
             }
         }
         sc.close();
     }
+
+    /**
+     * 根据主菜单选项执行对应动作。
+     *
+     * @param menuOpt 主菜单选项
+     * @param hero 当前玩家
+     * @param rand 用于随机选择敌人
+     * @param sc 读取控制台输入的扫描器
+     * @return 选择退出时返回 false，否则返回 true
+     */
+    private static boolean handleMenuOption(int menuOpt, Player hero, Random rand, Scanner sc) {
+        if (menuOpt == 0) {
+            System.out.println("江湖路远，后会有期！");
+            return false;
+        } else if (menuOpt == 2) {
+            hero.showStatus();
+        } else if (menuOpt == 1) {
+            printProcess();
+            EnemyFactory enemyFactory = enemyFactories.get(rand.nextInt(enemyFactories.size()));
+            Enemy enemy = enemyFactory.createEnemy();
+            // 玩家确认迎战后才进入战斗；撤退则回到主菜单。
+            if (fightOrWithdraw(sc)) {
+                Battle battle = new Battle(hero, enemy);
+                battle.startBattle();
+            }
+        } else {
+            System.out.println("无效选项");
+        }
+        return true;
+    }
+    //打印进度条
     private static void printProcess(){
         Random random = new Random();
         int width = 24;
@@ -85,5 +102,36 @@ public class WuXiaGame {
     public static void showMenu(){
         System.out.println("\n===== 主菜单 =====");
         System.out.println("1. 外出历练  2. 查看自身状态  0. 退出游戏");
+    }
+
+    /**
+     * 读取玩家选择，决定迎战或撤退；无效输入会重新提示。
+     *
+     * @param sc 读取控制台输入的扫描器
+     * @return 输入 1 时返回 true（战斗），输入 2 时返回 false（撤退）
+     */
+    public static boolean fightOrWithdraw(Scanner sc){
+        while (true) {
+            System.out.println("前方发现敌人，你要如何行动？");
+            System.out.println("1. 战斗  2. 撤退");
+            System.out.print("请选择：");
+            String choice = sc.nextLine();
+            // 输入后清屏，避免控制台保留刚才的选项提示。
+            clearConsole();
+            if ("1".equals(choice)) {
+                return true;
+            }
+            if ("2".equals(choice)) {
+                System.out.println("你选择撤退，暂避锋芒。");
+                return false;
+            }
+            System.out.println("输入无效，请输入 1 或 2。");
+        }
+    }
+
+    private static void clearConsole() {
+        // 使用 ANSI 转义序列清空屏幕并将光标移到左上角。
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
     }
 }
