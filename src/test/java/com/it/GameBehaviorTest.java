@@ -3,6 +3,8 @@ package com.it;
 import com.it.common.Skill;
 import com.it.core.Battle;
 import com.it.enemy.Enemy;
+import com.it.enemy.EnemyFactory;
+import com.it.enemy.EnemyType;
 import com.it.player.Player;
 import org.junit.Test;
 
@@ -83,6 +85,8 @@ public class GameBehaviorTest {
         String actionFrame = battleLog.substring(frameStart, frameEnd);
         assertTrue(actionFrame.contains("第 1 回合 · 战斗情况"));
         assertTrue(actionFrame.contains("内力 95/100"));
+        assertTrue(actionFrame.contains("测试敌人 Lv.1"));
+        assertTrue(actionFrame.contains("内力 100/100"));
         assertTrue(battleLog.contains("\u001B[H\u001B[2J"));
     }
 
@@ -111,5 +115,17 @@ public class GameBehaviorTest {
         assertEquals(130, player.getMaxInternalForce());
         assertEquals(150, player.getHP());
         assertEquals(130, player.getInternalForce());
+    }
+
+    @Test
+    public void enemyTypesHaveLevelsAndMatchingInternalForce() {
+        for (EnemyType type : EnemyType.values()) {
+            Enemy enemy = EnemyFactory.createEnemy(type);
+            int expectedInternalForce = 100 + (type.getLevel() - 1) * 15;
+
+            assertEquals(type.getLevel(), enemy.getLevel());
+            assertEquals(expectedInternalForce, enemy.getMaxInternalForce());
+            assertEquals(expectedInternalForce, enemy.getInternalForce());
+        }
     }
 }

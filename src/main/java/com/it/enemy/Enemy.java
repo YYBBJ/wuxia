@@ -14,16 +14,25 @@ public class Enemy {
     private int attack;
     private int level;
     private int internalForce;
+    private int maxInternalForce;
     private List<Skill> skills;
     private Random random = new Random();
 
-    public Enemy(String name,int attack){
+    public Enemy(String name, int attack) {
+        this(name, attack, 1);
+    }
+
+    public Enemy(String name, int attack, int level) {
+        if (level < 1) {
+            throw new IllegalArgumentException("敌人等级必须大于 0");
+        }
         this.name = name;
-        this.maxHP =100;
-        this.HP=maxHP;
-        this.attack=attack;
-        this.level=1;
-        this.internalForce=100;
+        this.maxHP = 100;
+        this.HP = maxHP;
+        this.attack = attack;
+        this.level = level;
+        this.maxInternalForce = 100 + (level - 1) * 15;
+        this.internalForce = maxInternalForce;
     }
 
     public int enemyAttack(){
@@ -40,6 +49,9 @@ public class Enemy {
     public int castSkill(Skill skill) {
         if (skill == null) {
             throw new IllegalArgumentException("技能不能为 null");
+        }
+        if (!hasEnoughInternalForce(skill)) {
+            throw new IllegalStateException("敌人内力不足，无法施展技能");
         }
         internalForce -= skill.getNeedInternalForce();
         int damage = skill.getDamage();
@@ -71,7 +83,8 @@ public class Enemy {
     }
 
     public void showStatus() {
-        System.out.printf("【%s Lv.%d】气血：%d/%d\n", name,level, HP,maxHP );
+        System.out.printf("【%s Lv.%d】气血：%d/%d | 内力：%d/%d%n",
+                name, level, HP, maxHP, internalForce, maxInternalForce);
     }
     
 }

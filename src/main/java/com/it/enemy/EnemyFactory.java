@@ -46,6 +46,6 @@ public final class EnemyFactory {
     private static Enemy createEnemyWithType(EnemyType type) {
         int attack = ThreadLocalRandom.current()
                 .nextInt(type.getMinAttack(), type.getMaxAttack() + 1);
-        return new Enemy(type.getDisplayName(), attack);
+        return new Enemy(type.getDisplayName(), attack, type.getLevel());
     }
 }

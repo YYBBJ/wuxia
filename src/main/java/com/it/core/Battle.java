@@ -199,7 +199,9 @@ public class Battle {
                 + player.getHP() + "/" + player.getMaxHP() + " | 内力 "
                 + player.getInternalForce() + "/" + player.getMaxInternalForce()
                 + " | 修为 " + player.getCultivation());
-        lines.add(enemy.getName() + "：气血 " + enemy.getHP() + "/" + enemy.getMaxHP());
+        lines.add(enemy.getName() + " Lv." + enemy.getLevel() + "：气血 "
+                + enemy.getHP() + "/" + enemy.getMaxHP() + " | 内力 "
+                + enemy.getInternalForce() + "/" + enemy.getMaxInternalForce());
 
         int width = displayWidth(title);
         for (String line : lines) {
