@@ -53,7 +53,7 @@ public class WuXiaGame {
             Enemy enemy = EnemyFactory.createRandomEnemy();
             // 玩家确认迎战后才进入战斗；撤退则回到主菜单。
             if (fightOrWithdraw(sc)) {
-                Battle battle = new Battle(hero, enemy);
+                Battle battle = new Battle(hero, enemy, sc);
                 battle.startBattle();
             }
         } else {

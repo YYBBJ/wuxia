@@ -5,13 +5,14 @@ import com.it.player.Player;
 import com.it.common.Skill;
 import com.it.enemy.Enemy;
 
+import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Scanner;
 
 public class Battle {
     private Player player;
     private Enemy enemy;
-    private Scanner sc = new Scanner(System.in);
+    private Scanner sc;
 
     /**
      * 创建一场由指定玩家与敌人参与的战斗。
@@ -20,8 +21,20 @@ public class Battle {
      * @param enemy 参与战斗的敌人
      */
     public Battle(Player player, Enemy enemy) {
+        this(player, enemy, new Scanner(System.in));
+    }
+
+    /**
+     * 创建一场使用指定输入源的战斗。
+     *
+     * @param player 参与战斗的玩家
+     * @param enemy 参与战斗的敌人
+     * @param sc 读取玩家操作的扫描器
+     */
+    public Battle(Player player, Enemy enemy, Scanner sc) {
         this.player = player;
         this.enemy = enemy;
+        this.sc = sc;
     }
 
     /** 开始战斗并循环处理玩家的行动，直到战斗结束或玩家逃跑。 */
@@ -36,6 +49,9 @@ public class Battle {
             int opt;
             try{
                 opt=Integer.parseInt(sc.nextLine());
+            }catch (NoSuchElementException e) {
+                System.out.println("输入已结束，战斗结束。");
+                break;
             }catch (Exception e){
                 System.out.println("输入无效，请重新输入");
                 continue;
@@ -76,7 +92,7 @@ public class Battle {
     private void restoreInternalForce() {
         int restoreInternForce = 15;
         int internalForce = player.getInternalForce();
-        player.setInternalForce(restoreInternForce + internalForce);
+        player.setInternalForce(Math.min(player.getMaxInternalForce(), restoreInternForce + internalForce));
         System.out.println("你闭目调息，恢复" + restoreInternForce + "内力");
     }
 

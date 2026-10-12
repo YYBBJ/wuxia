@@ -42,13 +42,21 @@ public class Player {
      * @return 返回造成的伤害
      */
     public int castSkill(Skill skill) {
+        if (skill == null) {
+            throw new IllegalArgumentException("技能不能为 null");
+        }
+        if (!hasEnoughInternalForce(skill)) {
+            throw new IllegalStateException("内力不足，无法施展");
+        }
         int damage=skill.getDamage();
         //减少内力
         internalForce-=skill.getNeedInternalForce();
         if (skill.getName().equals("静心诀")) {
             // 回血技能，不造成伤害
-            int heal = 20 + level * 3;
-            HP = Math.min(HP + heal, maxHP);
+            int healed = Math.min(20 + level * 3, maxHP - HP);
+            HP += healed;
+            System.out.printf("【%s】%s 恢复 %d 点气血！\n", skill.getName(), skill.getDesc(), healed);
+            return 0;
         }else{
             //20%机率暴击
             boolean isCrit=random.nextDouble()< 0.2;
@@ -87,8 +95,7 @@ public class Player {
 
     //升级判断
     public void checkLevelUp(){
-        int needCult=level*50;
-        if (cultivation >= needCult) {
+        while (cultivation >= level * 50) {
             level++;
             maxHP += 25;
             maxInternalForce += 15;
