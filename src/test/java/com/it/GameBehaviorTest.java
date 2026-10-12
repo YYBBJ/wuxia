@@ -32,11 +32,55 @@ public class GameBehaviorTest {
     @Test
     public void battleEndsWhenInputIsClosed() {
         Player player = new Player("测试侠客");
+        player.setHP(70);
+        player.setInternalForce(40);
         Battle battle = new Battle(player, new Enemy("测试敌人", 1), new Scanner(""));
 
         battle.startBattle();
 
-        assertEquals(100, player.getHP());
+        assertEquals(70, player.getHP());
+        assertEquals(40, player.getInternalForce());
+    }
+
+    @Test
+    public void completedBattleRestoresHealthAndInternalForce() {
+        Player player = new Player("测试侠客");
+        player.setHP(70);
+        player.setInternalForce(40);
+        Battle battle = new Battle(player, new Enemy("测试敌人", 1), new Scanner("3\n"));
+
+        battle.startBattle();
+
+        assertEquals(player.getMaxHP(), player.getHP());
+        assertEquals(player.getMaxInternalForce(), player.getInternalForce());
+    }
+
+    @Test
+    public void defeatedPlayerRecoversAfterBattle() {
+        Player player = new Player("测试侠客");
+        player.setHP(1);
+        player.setInternalForce(50);
+        Battle battle = new Battle(player, new Enemy("测试敌人", 1), new Scanner("1\n1\n"));
+
+        battle.startBattle();
+
+        assertEquals(player.getMaxHP(), player.getHP());
+        assertEquals(player.getMaxInternalForce(), player.getInternalForce());
+    }
+
+    @Test
+    public void victoryRecoversHealthAndInternalForce() {
+        Player player = new Player("测试侠客");
+        player.setHP(70);
+        player.setInternalForce(50);
+        Enemy enemy = new Enemy("测试敌人", 1);
+        enemy.setHP(1);
+        Battle battle = new Battle(player, enemy, new Scanner("1\n1\n"));
+
+        battle.startBattle();
+
+        assertEquals(player.getMaxHP(), player.getHP());
+        assertEquals(player.getMaxInternalForce(), player.getInternalForce());
     }
 
     @Test

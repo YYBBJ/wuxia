@@ -42,6 +42,7 @@ public class Battle {
     public void startBattle() {
         clearConsole();
         int round = 1;
+        boolean battleCompleted = false;
         printBattleReport(round, List.of("遭遇敌人：" + enemy.getName(), "等待你的行动。"));
 
         while (true) {
@@ -64,14 +65,23 @@ public class Battle {
             }
 
             clearConsole();
-            printBattleReport(round, actionMessages);
             if (result == TurnResult.BATTLE_OVER) {
+                battleCompleted = true;
+                player.recoverAfterBattle();
+                actionMessages.add("战斗完成，气血和内力已恢复至上限。");
+            }
+            printBattleReport(round, actionMessages);
+            if (battleCompleted) {
                 break;
             }
             round++;
         }
 
-        System.out.println("\n══════════════════ 战斗结束 ══════════════════");
+        if (battleCompleted) {
+            System.out.println("\n══════════════════ 战斗结束 ══════════════════");
+        } else {
+            System.out.println("\n══════════════════ 战斗中断 ══════════════════");
+        }
     }
 
     private enum TurnResult {

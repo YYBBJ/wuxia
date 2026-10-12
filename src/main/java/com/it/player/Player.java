@@ -90,6 +90,12 @@ public class Player {
         return HP <= 0;
     }
 
+    /** 战斗完成后恢复全部气血和内力。 */
+    public void recoverAfterBattle() {
+        HP = maxHP;
+        internalForce = maxInternalForce;
+    }
+
     /**
      * 根据当前修为提升等级。
      *
