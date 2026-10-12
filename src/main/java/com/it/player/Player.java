@@ -55,7 +55,6 @@ public class Player {
             // 回血技能，不造成伤害
             int healed = Math.min(20 + level * 3, maxHP - HP);
             HP += healed;
-            System.out.printf("【%s】%s 恢复 %d 点气血！\n", skill.getName(), skill.getDesc(), healed);
             return 0;
         }else{
             //20%机率暴击
@@ -63,10 +62,8 @@ public class Player {
             damage=skill.getDamage()+level*4;
             if (isCrit) {
                 damage*=2;
-                System.out.println("🔥 暴击！！");
             }
         }
-        System.out.printf("【%s】%s 造成 %d 点伤害！\n", skill.getName(), skill.getDesc(), damage);
         return damage;
     }
 
@@ -93,17 +90,22 @@ public class Player {
         return HP <= 0;
     }
 
-    //升级判断
-    public void checkLevelUp(){
+    /**
+     * 根据当前修为提升等级。
+     *
+     * @return 本次提升的等级数
+     */
+    public int checkLevelUp(){
+        int levelsGained = 0;
         while (cultivation >= level * 50) {
             level++;
+            levelsGained++;
             maxHP += 25;
             maxInternalForce += 15;
             HP = maxHP;
             internalForce = maxInternalForce;
-            System.out.println("\n🎉 你突破境界！升级到 Lv." + level);
-            System.out.printf("气血上限+25，内力上限+15！\n");
         }
+        return levelsGained;
     }
     // 打印玩家状态
     public void showStatus() {

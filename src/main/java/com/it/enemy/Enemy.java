@@ -28,14 +28,7 @@ public class Enemy {
 
     public int enemyAttack(){
         boolean heavy = random.nextDouble() < 0.25;
-        int damage=heavy?attack*2:attack;
-        if (heavy) {
-            System.out.printf("\n💥 %s使出重击！！\n", name);
-        }else {
-            System.out.printf("\n%s挥招向你攻来！\n", name);
-        }
-        System.out.printf("你受到 %d 点伤害！\n", damage);
-        return damage;
+        return heavy ? attack * 2 : attack;
     }
 
     /**

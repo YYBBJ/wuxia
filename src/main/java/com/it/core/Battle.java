@@ -1,18 +1,19 @@
 package com.it.core;
 
-
-import com.it.player.Player;
 import com.it.common.Skill;
 import com.it.enemy.Enemy;
+import com.it.player.Player;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Scanner;
 
 public class Battle {
-    private Player player;
-    private Enemy enemy;
-    private Scanner sc;
+    private final Player player;
+    private final Enemy enemy;
+    private final Scanner sc;
 
     /**
      * 创建一场由指定玩家与敌人参与的战斗。
@@ -38,36 +39,38 @@ public class Battle {
     }
 
     /** 开始战斗并循环处理玩家的行动，直到战斗结束或玩家逃跑。 */
-    public void startBattle(){
-        System.out.println("\n══════════════ ⚔️ 新战斗开始 ⚔️ ══════════════");
-        System.out.printf("遭遇敌人：%s%n", enemy.getName());
+    public void startBattle() {
+        clearConsole();
         int round = 1;
-        while(true){
-            System.out.printf("\n──── 第 %d 回合 ────%n", round);
-            System.out.println("【当前战况】");
-            player.showStatus();
-            enemy.showStatus();
-            System.out.println("\n请选择行动：");
-            System.out.println("1. 释放武学  2. 调息回内  3. 逃跑");
-            System.out.print("输入数字：");
-            int opt;
-            try{
-                opt=Integer.parseInt(sc.nextLine());
-            }catch (NoSuchElementException e) {
+        printBattleReport(round, List.of("遭遇敌人：" + enemy.getName(), "等待你的行动。"));
+
+        while (true) {
+            printActionPrompt(round);
+            int option;
+            try {
+                option = Integer.parseInt(sc.nextLine());
+            } catch (NoSuchElementException e) {
                 System.out.println("输入已结束，战斗结束。");
                 break;
-            }catch (Exception e){
-                System.out.println("输入无效，请重新输入");
+            } catch (Exception e) {
+                System.out.println("输入无效，请重新输入。");
                 continue;
             }
-            TurnResult result = handleOption(opt);
+
+            List<String> actionMessages = new ArrayList<>();
+            TurnResult result = handleOption(option, actionMessages);
+            if (result == TurnResult.RETRY) {
+                continue;
+            }
+
+            clearConsole();
+            printBattleReport(round, actionMessages);
             if (result == TurnResult.BATTLE_OVER) {
                 break;
             }
-            if (result == TurnResult.TURN_COMPLETED) {
-                round++;
-            }
+            round++;
         }
+
         System.out.println("\n══════════════════ 战斗结束 ══════════════════");
     }
 
@@ -77,132 +80,167 @@ public class Battle {
         BATTLE_OVER
     }
 
-    /**
-     * 根据玩家选择处理对应行动。
-     *
-     * @param opt 玩家输入的行动选项
-     * @return 行动是否消耗回合或结束战斗
-     */
-    private TurnResult handleOption(int opt) {
-        if (opt == 3) {
-            handleEscape();
+    /** 根据玩家选择处理对应行动。 */
+    private TurnResult handleOption(int option, List<String> messages) {
+        if (option == 3) {
+            messages.add("你抽身远退，成功逃离战场。");
             return TurnResult.BATTLE_OVER;
-        } else if (opt == 2) {
-            restoreInternalForce();
-            return TurnResult.TURN_COMPLETED;
-        } else if (opt == 1) {
-            return handlePlayerAttack();
-        } else {
-            showInvalidOption();
-            return TurnResult.RETRY;
         }
+        if (option == 2) {
+            messages.add(restoreInternalForce());
+            return TurnResult.TURN_COMPLETED;
+        }
+        if (option == 1) {
+            return handlePlayerAttack(messages);
+        }
+
+        System.out.println("选项不存在。");
+        return TurnResult.RETRY;
     }
 
-    /** 显示玩家逃离战场的提示。 */
-    private void handleEscape() {
-        System.out.println("你抽身远退，成功逃离战场！");
+    /** 恢复玩家最多 15 点内力，并返回本次实际恢复量。 */
+    private String restoreInternalForce() {
+        int before = player.getInternalForce();
+        int after = Math.min(player.getMaxInternalForce(), before + 15);
+        player.setInternalForce(after);
+        return "你闭目调息，恢复 " + (after - before) + " 点内力。";
     }
 
-    /** 恢复玩家 15 点内力并显示调息提示。 */
-    private void restoreInternalForce() {
-        int restoreInternForce = 15;
-        int internalForce = player.getInternalForce();
-        player.setInternalForce(Math.min(player.getMaxInternalForce(), restoreInternForce + internalForce));
-        System.out.println("你闭目调息，恢复" + restoreInternForce + "内力");
-    }
-
-    /**
-     * 处理玩家攻击及敌人的反击。
-     *
-     * @return 行动是否消耗回合或结束战斗
-     */
-    private TurnResult handlePlayerAttack() {
+    /** 处理玩家攻击及敌人的反击。 */
+    private TurnResult handlePlayerAttack(List<String> messages) {
         Skill skill = selectSkill();
         if (skill == null) {
             return TurnResult.RETRY;
         }
         if (!player.hasEnoughInternalForce(skill)) {
-            showInsufficientInternalForce();
+            System.out.println("内力不足，无法施展！");
             return TurnResult.RETRY;
         }
 
+        int playerHealthBefore = player.getHP();
         int damageToEnemy = player.castSkill(skill);
+        int healing = player.getHP() - playerHealthBefore;
+        if (healing > 0 || skill.getName().equals("静心诀")) {
+            messages.add("你施展【" + skill.getName() + "】，恢复 " + healing + " 点气血。");
+        } else {
+            int normalDamage = skill.getDamage() + player.getLevel() * 4;
+            String criticalMessage = damageToEnemy > normalDamage ? "触发暴击，" : "";
+            messages.add("你施展【" + skill.getName() + "】" + criticalMessage
+                    + "对" + enemy.getName() + "造成 " + damageToEnemy + " 点伤害。");
+        }
+
         enemy.loseHP(damageToEnemy);
         if (enemy.isDead()) {
-            handleEnemyDefeat();
+            handleEnemyDefeat(messages);
             return TurnResult.BATTLE_OVER;
         }
 
         int damageToPlayer = enemy.enemyAttack();
-        player.setHP(player.getHP() - damageToPlayer);
+        String attackDescription = damageToPlayer > enemy.getAttack() ? "使出重击" : "发起反击";
+        player.setHP(Math.max(0, player.getHP() - damageToPlayer));
+        messages.add(enemy.getName() + attackDescription + "，你受到 " + damageToPlayer + " 点伤害。");
         if (player.isDead()) {
-            handlePlayerDefeat();
+            messages.add("你重伤倒地，战斗失败。");
             return TurnResult.BATTLE_OVER;
         }
         return TurnResult.TURN_COMPLETED;
     }
 
-    /** 显示武学列表并读取玩家选择的招式。 */
+    /** 显示玩家当前可用的武学及其内力消耗，并读取招式选择。 */
     private Skill selectSkill() {
-        showSkillList();
-        System.out.println();
-        System.out.print("选择招式序号：");
-
-        int skillIdx;
-        try {
-            skillIdx = Integer.parseInt(sc.nextLine()) - 1;
-        } catch (Exception e) {
-            showInvalidSkillInput();
-            return null;
-        }
-        if (skillIdx < 0 || skillIdx >= player.getSkills().size()) {
-            showInvalidSkillIndex();
-            return null;
-        }
-        return player.getSkills().get(skillIdx);
-    }
-
-    /** 显示玩家当前可用的武学及其内力消耗。 */
-    private void showSkillList() {
         System.out.println("\n===== 武学列表 =====");
         for (int i = 0; i < player.getSkills().size(); i++) {
             Skill skill = player.getSkills().get(i);
-            System.out.printf("%d. %s（内力消耗：%d）%s\n", i + 1, skill.getName(), skill.getNeedInternalForce(), skill.getDesc());
+            System.out.printf("%d. %s（内力消耗：%d）%s%n",
+                    i + 1, skill.getName(), skill.getNeedInternalForce(), skill.getDesc());
+        }
+        System.out.print("选择招式序号：");
+
+        int skillIndex;
+        try {
+            skillIndex = Integer.parseInt(sc.nextLine()) - 1;
+        } catch (Exception e) {
+            System.out.println("招式选择无效！");
+            return null;
+        }
+        if (skillIndex < 0 || skillIndex >= player.getSkills().size()) {
+            System.out.println("不存在该招式！");
+            return null;
+        }
+        return player.getSkills().get(skillIndex);
+    }
+
+    /** 处理敌人被击败后的奖励及升级信息。 */
+    private void handleEnemyDefeat(List<String> messages) {
+        messages.add("你击败了" + enemy.getName() + "。");
+        int reward = 30 + new Random().nextInt(20);
+        player.setCultivation(player.getCultivation() + reward);
+        messages.add("获得修为 +" + reward + "。");
+        int levelsGained = player.checkLevelUp();
+        if (levelsGained > 0) {
+            messages.add("突破境界，升至 Lv." + player.getLevel()
+                    + "；气血上限 +" + (levelsGained * 25)
+                    + "，内力上限 +" + (levelsGained * 15) + "。");
         }
     }
 
-    /** 显示招式序号输入格式错误的提示。 */
-    private void showInvalidSkillInput() {
-        System.out.println("招式选择无效！");
+    private void printActionPrompt(int round) {
+        System.out.printf("\n第 %d 回合，请选择行动：%n", round);
+        System.out.println("1. 释放武学  2. 调息回内  3. 逃跑");
+        System.out.print("输入数字：");
     }
 
-    /** 显示招式序号不存在的提示。 */
-    private void showInvalidSkillIndex() {
-        System.out.println("不存在该招式！");
+    private void printBattleReport(int round, List<String> messages) {
+        String title = "第 " + round + " 回合 · 战斗情况";
+        List<String> lines = new ArrayList<>(messages);
+        lines.add("");
+        lines.add("【当前状态】");
+        lines.add("侠客【" + player.getName() + " Lv." + player.getLevel() + "】：气血 "
+                + player.getHP() + "/" + player.getMaxHP() + " | 内力 "
+                + player.getInternalForce() + "/" + player.getMaxInternalForce()
+                + " | 修为 " + player.getCultivation());
+        lines.add(enemy.getName() + "：气血 " + enemy.getHP() + "/" + enemy.getMaxHP());
+
+        int width = displayWidth(title);
+        for (String line : lines) {
+            width = Math.max(width, displayWidth(line));
+        }
+
+        String border = "─".repeat(width + 2);
+        System.out.println("\n┌" + border + "┐");
+        printBoxLine(title, width);
+        System.out.println("├" + border + "┤");
+        for (String line : lines) {
+            printBoxLine(line, width);
+        }
+        System.out.println("└" + border + "┘");
     }
 
-    /** 显示玩家内力不足、无法施展招式的提示。 */
-    private void showInsufficientInternalForce() {
-        System.out.println("内力不足，无法施展！");
+    private void printBoxLine(String line, int width) {
+        System.out.println("│ " + line + " ".repeat(width - displayWidth(line)) + " │");
     }
 
-    /** 处理敌人被击败后的奖励发放及玩家升级检查。 */
-    private void handleEnemyDefeat() {
-        System.out.printf("\n✅ %s被你击败！\n", enemy.getName());
-        int reward = 30 + new Random().nextInt(20);
-        player.setCultivation(player.getCultivation() + reward);
-        System.out.printf("获得修为 +%d\n", reward);
-        player.checkLevelUp();
+    private int displayWidth(String text) {
+        int width = 0;
+        for (int offset = 0; offset < text.length();) {
+            int codePoint = text.codePointAt(offset);
+            offset += Character.charCount(codePoint);
+            int type = Character.getType(codePoint);
+            if (type == Character.NON_SPACING_MARK
+                    || type == Character.COMBINING_SPACING_MARK
+                    || type == Character.ENCLOSING_MARK
+                    || codePoint == 0x200D
+                    || (codePoint >= 0xFE00 && codePoint <= 0xFE0F)) {
+                continue;
+            }
+            width += codePoint <= 0x00FF ? 1 : 2;
+        }
+        return width;
     }
 
-    /** 显示玩家重伤倒地、战斗失败的提示。 */
-    private void handlePlayerDefeat() {
-        System.out.println("\n❌ 你重伤倒地，战斗失败...");
+    /** 使用终端控制序列清除旧的菜单、提示和战报。 */
+    private void clearConsole() {
+        System.out.print("\u001B[H\u001B[2J");
+        System.out.flush();
     }
-
-    /** 显示玩家输入了无效行动选项的提示。 */
-    private void showInvalidOption() {
-        System.out.println("选项不存在");
-    }
-
 }

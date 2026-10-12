@@ -53,12 +53,37 @@ public class GameBehaviorTest {
         }
 
         String battleLog = output.toString(StandardCharsets.UTF_8);
-        assertTrue(battleLog.contains("新战斗开始"));
+        assertTrue(battleLog.contains("第 1 回合 · 战斗情况"));
         assertTrue(battleLog.contains("遭遇敌人：测试敌人"));
         assertTrue(battleLog.contains("第 1 回合"));
-        assertTrue(battleLog.contains("【当前战况】"));
+        assertTrue(battleLog.contains("【当前状态】"));
         assertFalse(battleLog.contains("第 2 回合"));
         assertTrue(battleLog.contains("战斗结束"));
+    }
+
+    @Test
+    public void actionResultAndUpdatedStateAppearInsideTheFrame() {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        try {
+            System.setOut(new PrintStream(output, true, StandardCharsets.UTF_8));
+            Player player = new Player("测试侠客");
+            player.setInternalForce(80);
+            new Battle(player, new Enemy("测试敌人", 1), new Scanner("2\n3\n")).startBattle();
+        } finally {
+            System.setOut(originalOut);
+        }
+
+        String battleLog = output.toString(StandardCharsets.UTF_8);
+        int actionIndex = battleLog.indexOf("你闭目调息，恢复 15 点内力。");
+        int frameStart = battleLog.lastIndexOf("┌", actionIndex);
+        int frameEnd = battleLog.indexOf("└", actionIndex);
+        assertTrue(actionIndex >= 0);
+        assertTrue(frameStart >= 0 && frameEnd > actionIndex);
+        String actionFrame = battleLog.substring(frameStart, frameEnd);
+        assertTrue(actionFrame.contains("第 1 回合 · 战斗情况"));
+        assertTrue(actionFrame.contains("内力 95/100"));
+        assertTrue(battleLog.contains("\u001B[H\u001B[2J"));
     }
 
     @Test
