@@ -39,8 +39,12 @@ public class Battle {
 
     /** 开始战斗并循环处理玩家的行动，直到战斗结束或玩家逃跑。 */
     public void startBattle(){
-        System.out.println("\n===== ⚔️ 战斗开始 ⚔️ =====");
+        System.out.println("\n══════════════ ⚔️ 新战斗开始 ⚔️ ══════════════");
+        System.out.printf("遭遇敌人：%s%n", enemy.getName());
+        int round = 1;
         while(true){
+            System.out.printf("\n──── 第 %d 回合 ────%n", round);
+            System.out.println("【当前战况】");
             player.showStatus();
             enemy.showStatus();
             System.out.println("\n请选择行动：");
@@ -56,30 +60,41 @@ public class Battle {
                 System.out.println("输入无效，请重新输入");
                 continue;
             }
-            if (!handleOption(opt)) {
+            TurnResult result = handleOption(opt);
+            if (result == TurnResult.BATTLE_OVER) {
                 break;
             }
+            if (result == TurnResult.TURN_COMPLETED) {
+                round++;
+            }
         }
+        System.out.println("\n══════════════════ 战斗结束 ══════════════════");
+    }
+
+    private enum TurnResult {
+        RETRY,
+        TURN_COMPLETED,
+        BATTLE_OVER
     }
 
     /**
      * 根据玩家选择处理对应行动。
      *
      * @param opt 玩家输入的行动选项
-     * @return true 表示继续战斗，false 表示结束战斗
+     * @return 行动是否消耗回合或结束战斗
      */
-    private boolean handleOption(int opt) {
+    private TurnResult handleOption(int opt) {
         if (opt == 3) {
             handleEscape();
-            return false;
+            return TurnResult.BATTLE_OVER;
         } else if (opt == 2) {
             restoreInternalForce();
-            return true;
+            return TurnResult.TURN_COMPLETED;
         } else if (opt == 1) {
             return handlePlayerAttack();
         } else {
             showInvalidOption();
-            return true;
+            return TurnResult.RETRY;
         }
     }
 
@@ -99,32 +114,32 @@ public class Battle {
     /**
      * 处理玩家攻击及敌人的反击。
      *
-     * @return true 表示继续战斗，false 表示敌人已被击败
+     * @return 行动是否消耗回合或结束战斗
      */
-    private boolean handlePlayerAttack() {
+    private TurnResult handlePlayerAttack() {
         Skill skill = selectSkill();
         if (skill == null) {
-            return true;
+            return TurnResult.RETRY;
         }
         if (!player.hasEnoughInternalForce(skill)) {
             showInsufficientInternalForce();
-            return true;
+            return TurnResult.RETRY;
         }
 
         int damageToEnemy = player.castSkill(skill);
         enemy.loseHP(damageToEnemy);
         if (enemy.isDead()) {
             handleEnemyDefeat();
-            return false;
+            return TurnResult.BATTLE_OVER;
         }
 
         int damageToPlayer = enemy.enemyAttack();
         player.setHP(player.getHP() - damageToPlayer);
         if (player.isDead()) {
             handlePlayerDefeat();
-            return false;
+            return TurnResult.BATTLE_OVER;
         }
-        return true;
+        return TurnResult.TURN_COMPLETED;
     }
 
     /** 显示武学列表并读取玩家选择的招式。 */
